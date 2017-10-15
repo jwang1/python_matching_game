@@ -26,7 +26,7 @@ class MatchingGame:
   BOLD = '\033[1m'
   END = '\033[0m'
 
-  QUIT = 'q'
+  QUIT = ('q', 'quit', 'Q', 'Quit')
 
   LITTLE_A_ORD = ord('a')
   LITTLE_Z_ORD = ord('z')
@@ -96,9 +96,9 @@ class MatchingGame:
   def promptConsecutiveMatches(self):
     while (self.consecutiveMatch < 2 or self.consecutiveMatch > min(self.row, self.col)):
       try:
-        ipt = int(input(MatchingGame.PROMPT_CONSECUTIVE_MATCHES + " row (" + str(self.row)
-                                        + ") and column (" + str(self.col) + "): "))
-        if (ipt == MatchingGame.QUIT):
+        ipt = input(MatchingGame.PROMPT_CONSECUTIVE_MATCHES + " row (" + str(self.row)
+                                        + ") and column (" + str(self.col) + "): ")
+        if (ipt in MatchingGame.QUIT):
           self.quit = True
 
         self.consecutiveMatch = int(ipt)
@@ -113,7 +113,7 @@ class MatchingGame:
     while self.row < 1:
       try:
         ipt = input(MatchingGame.PROMPT_BOARD_ROW)
-        if ipt == MatchingGame.QUIT:
+        if ipt in MatchingGame.QUIT:
           self.quit = True
 
         self.row = int(ipt)
@@ -128,7 +128,7 @@ class MatchingGame:
       try:
         ipt = int(input(MatchingGame.PROMPT_BOARD_COL))
 
-        if ipt == MatchingGame.QUIT:
+        if ipt in MatchingGame.QUIT:
           self.quit = True
 
         self.col = int(ipt)
