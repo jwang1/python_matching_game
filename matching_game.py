@@ -50,6 +50,8 @@ class MatchingGame:
 
     self.cellValues = cellVals
 
+    self.isDebug = True
+
     self.score = 0
 
     # might use self.matchesInOneRound, instead of self.foundMatches
@@ -104,7 +106,7 @@ class MatchingGame:
 
     self.initBoard()
 
-    print("__________BEFORE checking consecutive matches_____________\n")
+    self.debugMatchingGame("__________BEFORE checking consecutive matches_____________\n")
     self.printBoard()
 
 
@@ -127,7 +129,7 @@ class MatchingGame:
       # check matches again
       self.checkMatches()
 
-      print("# of matches : " + str(self.matchesInOneRound))
+      self.debugMatchingGame("# of matches : " + str(self.matchesInOneRound))
 
     print("__________AFTER checking consecutive matches (ready to play)_____________\n")
     self.printBoard()
@@ -226,7 +228,7 @@ class MatchingGame:
         self.matchesInOneRound += colMatchEnd - colMatchStart + 1
         self.foundMatches = True
 
-    print('{} self.matchesInOneRound is {}, matching-indexes: {}'
+    self.debugMatchingGame('{} self.matchesInOneRound is {}, matching-indexes: {}'
           .format("checkMatches()", self.matchesInOneRound, self.matches))
 
 
@@ -234,12 +236,12 @@ class MatchingGame:
   def markMatches(self):
     for row, startEnd in self.matches.get("rows").items():
       # Python format String : https://pyformat.info/
-      print('{} {}'.format("row=", row), startEnd)
+      self.debugMatchingGame('{} {} {}'.format("row=", row, startEnd))
       for c in range(startEnd[0], startEnd[1] + 1):
         self.board[row][c] = MatchingGame.MATCH_MARKER
 
     for col, startEnd in self.matches.get("cols").items():
-      print('{} {}'.format("col=", col), startEnd)
+      self.debugMatchingGame('{} {} {}'.format("col=", col, startEnd))
       for r in range(startEnd[0], startEnd[1] + 1):
         self.board[r][col] = MatchingGame.MATCH_MARKER
 
@@ -296,10 +298,10 @@ class MatchingGame:
     # print formatted tupple elements/values
     if len(startEnd) > 0:
       try:
-        print('{} {} got startEnd Indexes: ({}, {}) '.format("getStartEndIndexForMatchMarksByCol(...) checking column: ",
+        self.debugMatchingGame('{} {} got startEnd Indexes: ({}, {}) '.format("getStartEndIndexForMatchMarksByCol(...) checking column: ",
                                                   col, *startEnd))
       except IndexError:
-        print(startEnd)
+        self.debugMatchingGame(startEnd)
 
     # the start-end-index can be None, ie, the tuple can be empty.
     return startEnd
@@ -360,7 +362,7 @@ class MatchingGame:
 
   """Initialize data members."""
   def playMatchingGame(self):
-    print("\n" + "Let's start gaming: ")
+    self.debugMatchingGame("\n" + "Let's start gaming: ")
 
 
   # Util api to derandomize cell by row
@@ -373,6 +375,14 @@ class MatchingGame:
   def deRandomizeCol(self, col):
     for r in range(self.row):
       self.board[r][col] = MatchingGame.DERANDOMIZER
+
+
+  def setDebug(self, debug):
+    self.isDebug = debug
+
+  def debugMatchingGame(self, msg):
+    if self.isDebug:
+      print(msg)
 
 
 
