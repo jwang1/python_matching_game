@@ -90,7 +90,7 @@ class MatchingGame:
     self.matches = {"rows": {}, "cols": {}}
 
     # set up game board
-    self.setupGame()
+    # self.setupGame()  # called outside of the __init__, so that we can set the cell-values, isDebug stuff
 
 
   # overrides the cell values (useful for testing, small cellVals, can get more matches; otherwise, 26 lowercase
@@ -106,7 +106,7 @@ class MatchingGame:
 
     self.initBoard()
 
-    self.debugMatchingGame("__________BEFORE checking consecutive matches_____________\n")
+    print("__________BEFORE checking consecutive matches_____________\n")
     self.printBoard()
 
 
@@ -402,4 +402,6 @@ if __name__ == '__main__':
   else:
     game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER)
 
+  game.setDebug(False)
+  game.setupGame()
   game.playMatchingGame()
