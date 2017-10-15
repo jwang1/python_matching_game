@@ -167,6 +167,8 @@ class MatchingGame:
     # matches for this round of checking
     # initialize to 0; so that we can use this value to check whether there are still matches.
     self.matchesInOneRound = 0
+    self.matches =  {"rows": {}, "cols": {}}
+
     colMatchStart = -1
     colMatchEnd = -1
 
@@ -182,9 +184,9 @@ class MatchingGame:
           rowMatchEnd = c
         else:
           # check if previous matches (right before this point) reaches consecutiveMatch ?
-          if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
+          if rowMatchEnd - rowMatchStart + 1 >= self.consecutiveMatch:
             self.matches.get("rows")[r] = (rowMatchStart, rowMatchEnd)
-            self.matchesInOneRound += rowMatchEnd - rowMatchStart
+            self.matchesInOneRound += rowMatchEnd - rowMatchStart + 1
             self.foundMatches = True
 
           # reset rowMatchStart index
@@ -192,9 +194,9 @@ class MatchingGame:
           matchingChar = self.board[r][c]
 
       # special case; all characters in that row are matched
-      if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
+      if rowMatchEnd - rowMatchStart + 1 >= self.consecutiveMatch:
         self.matches.get("rows")[r] = (rowMatchStart, rowMatchEnd)
-        self.matchesInOneRound += rowMatchEnd - rowMatchStart
+        self.matchesInOneRound += rowMatchEnd - rowMatchStart + 1
         self.foundMatches = True
 
 
@@ -209,9 +211,9 @@ class MatchingGame:
           colMatchEnd = r
         else:
           # check if previous matches (prior to this breaking point) reaches self.consecutiveMatch ?
-          if colMatchEnd - colMatchStart >= self.consecutiveMatch:
+          if colMatchEnd - colMatchStart + 1 >= self.consecutiveMatch:
             self.matches.get("cols")[c] = (colMatchStart, colMatchEnd)
-            self.matchesInOneRound += colMatchEnd - colMatchStart
+            self.matchesInOneRound += colMatchEnd - colMatchStart + 1
             self.foundMatches = True
 
           # reset colMatchStart index
@@ -219,11 +221,13 @@ class MatchingGame:
           matchingChar = self.board[r][c]
 
       # special case: all characters in that column are matched
-      if colMatchEnd - colMatchStart >= self.consecutiveMatch:
+      if colMatchEnd - colMatchStart + 1 >= self.consecutiveMatch:
         self.matches.get("cols")[c] = (colMatchStart, colMatchEnd)
-        self.matchesInOneRound += colMatchEnd - colMatchStart
+        self.matchesInOneRound += colMatchEnd - colMatchStart + 1
         self.foundMatches = True
 
+    print('{} self.matchesInOneRound is {}, matching-indexes: {}'
+          .format("checkMatches()", self.matchesInOneRound, self.matches))
 
 
   """Mark matches with MATCH_MARKER"""
@@ -290,10 +294,17 @@ class MatchingGame:
       startEnd = (start, end)
 
     # print formatted tupple elements/values
-    print('{} {} got startEnd Indexes: ({}, {}) '.format("getStartEndIndexForMatchMarksByCol(...) checking column: ",
-                                                col, *startEnd))
+    if len(startEnd) > 0:
+      try:
+        print('{} {} got startEnd Indexes: ({}, {}) '.format("getStartEndIndexForMatchMarksByCol(...) checking column: ",
+                                                  col, *startEnd))
+      except IndexError:
+        print(startEnd)
 
+    # the start-end-index can be None, ie, the tuple can be empty.
     return startEnd
+
+
 
   def promptUser(self):
     self.promptRow()
@@ -350,7 +361,6 @@ class MatchingGame:
   """Initialize data members."""
   def playMatchingGame(self):
     print("\n" + "Let's start gaming: ")
-    print(self.matches)
 
 
   # Util api to derandomize cell by row
@@ -374,7 +384,7 @@ if __name__ == '__main__':
     if uip in ('no', 'n', 'nope', 'don\'t'):
       game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, False)
     else:
-      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True, 'abcd')
+      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True, 'ab')
 
       # when computer generate Game Board, we will re-set the cell-values
       # game.setCellValues("abc")  (no effect, before init happened first)
