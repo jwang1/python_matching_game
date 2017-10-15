@@ -40,17 +40,33 @@ class MatchingGame:
                                "(note it has to be less or equal to the mininum of "
   USER_QUITS = "User quits game."
 
+  DERANDOMIZER = 'a'
+
   """Initialize data members."""
   def __init__(self, autoGameSetting, randmoizeCells):
     self.score = 0
-    self.hasMatches = False
+
+    # might use self.matchesInOneRound, instead of self.foundMatches
+    self.foundMatches = False
+    self.matchesInOneRound = 0
+
+    # Game board
     self.row = -1
     self.col = -1
+
+    # how many consecutives are regarded as matches
     self.consecutiveMatch = -1
+
+    # User quits playing?
     self.quit = False
+
+    # Let computer set up game board?
     self.autoGameSetting = autoGameSetting
+
+    # to randomize cells, useful for testing - deterministic consecutive matches
     self.randomizeCells = randmoizeCells
 
+    # Computer always set Game Board 4x5, and requires 3 consecutives to be treated as matches.
     if self.autoGameSetting:
       self.row = 4
       self.col = 5
@@ -74,7 +90,25 @@ class MatchingGame:
       self.promptUser()
 
     self.initBoard()
+
+    self.printBoard()
+
     self.checkMatches()
+
+    # For testing game, if not randomzing cells, no need to checkMatches again.  Game Board is initialized up to here.
+    if not self.randomizeCells:
+      return
+
+    # keep checkMatches until there are no matches, that is, Game Board is completed
+    # initialization - no matches on the init-board; users can make move now on; Scores will be taken for user's move
+    while self.matchesInOneRound > 0:
+      # TODO: randomize the matched cells, to randomize the Board;  Or, instead randomize, let's sinkCells
+
+      # check matches again
+      self.checkMatches()
+
+      print("# of matches : " + str(self.matchesInOneRound))
+
     self.printBoard()
 
 
@@ -85,6 +119,9 @@ class MatchingGame:
     self.board = [['0' for r in range(self.col)] for i in range(self.row)]
 
     if not self.randomizeCells:
+      # for testing purpose, let's make 2nd row with matches, and 3rd column with matches
+      self.deRandomizeRow(1)
+      self.deRandomizeCol(2)
       return
 
     for r in range(self.row):
@@ -106,6 +143,9 @@ class MatchingGame:
 
 
   def checkMatches(self):
+    # matches for this round of checking
+    # initialize to 0; so that we can use this value to check whether there are still matches.
+    self.matchesInOneRound = 0
     colMatchStart = -1
     colMatchEnd = -1
 
@@ -117,12 +157,14 @@ class MatchingGame:
       matchingChar = self.board[r][0]
 
       for c in range(self.col):
-        if self.board[r][c] == matchingChar:
+        if matchingChar.isalpha() and self.board[r][c] == matchingChar:
           rowMatchEnd = c
         else:
           # check if previous matches (right before this point) reaches consecutiveMatch ?
           if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
             self.matches.get("rows")[str(r)] = (rowMatchStart, rowMatchEnd)
+            self.matchesInOneRound += rowMatchEnd - rowMatchStart
+            self.foundMatches = True
 
           # reset rowMatchStart index
           rowMatchStart = c
@@ -131,6 +173,8 @@ class MatchingGame:
       # special case; all characters in that row are matched
       if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
         self.matches.get("rows")[str(r)] = (rowMatchStart, rowMatchEnd)
+        self.matchesInOneRound += rowMatchEnd - rowMatchStart
+        self.foundMatches = True
 
 
     # handle columns matches
@@ -140,12 +184,14 @@ class MatchingGame:
       matchingChar = self.board[0][c]
 
       for r in range(self.row):
-        if self.board[r][c] == matchingChar:
+        if matchingChar.isalpha() and self.board[r][c] == matchingChar:
           colMatchEnd = r
         else:
           # check if previous matches (prior to this breaking point) reaches self.consecutiveMatch ?
           if colMatchEnd - colMatchStart >= self.consecutiveMatch:
             self.matches.get("cols")[str(c)] = (colMatchStart, colMatchEnd)
+            self.matchesInOneRound += colMatchEnd - colMatchStart
+            self.foundMatches = True
 
           # reset colMatchStart index
           colMatchStart = r
@@ -154,6 +200,8 @@ class MatchingGame:
       # special case: all characters in that column are matched
       if colMatchEnd - colMatchStart >= self.consecutiveMatch:
         self.matches.get("cols")[str(c)] = (colMatchStart, colMatchEnd)
+        self.matchesInOneRound += colMatchEnd - colMatchStart
+        self.foundMatches = True
 
 
 
@@ -214,6 +262,18 @@ class MatchingGame:
   def playMatchingGame(self):
     print("\n" + "Let's start gaming: ")
     print(self.matches)
+
+
+  # Util api to derandomize cell by row
+  def deRandomizeRow(self, row):
+    for c in range(self.col):
+      self.board[row][c] = MatchingGame.DERANDOMIZER
+
+
+  # Util api to derandomize cell by column
+  def deRandomizeCol(self, col):
+    for r in range(self.row):
+      self.board[r][col] = MatchingGame.DERANDOMIZER
 
 
 
