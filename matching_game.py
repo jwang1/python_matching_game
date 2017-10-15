@@ -42,6 +42,8 @@ class MatchingGame:
 
   DERANDOMIZER = 'a'
 
+  MATCH_MARKER = '*'
+
   """Initialize data members."""
   def __init__(self, autoGameSetting, randmoizeCells):
     self.score = 0
@@ -74,9 +76,11 @@ class MatchingGame:
 
     """Data structure for the matches"""
     # matches records the tuples of matching start-and-end index for a row, a column
-    # for example:   {"rows": { {"1": (2, 6)}, {"3": (0, 3)} },
-    #                 "cols": { {"3": (0, 3)}, {"6": (3, 7)} }
+    # for example:   {"rows": { {1: (2, 6)}, {3: (0, 3)} },
+    #                 "cols": { {3: (0, 3)}, {6: (3, 7)} }
     #                }
+    # Note, the above start-end index; the end-index is INCLUSIVE!
+    #
     self.matches = {"rows": {}, "cols": {}}
 
     # set up game board
@@ -97,12 +101,15 @@ class MatchingGame:
 
     # For testing game, if not randomzing cells, no need to checkMatches again.  Game Board is initialized up to here.
     if not self.randomizeCells:
+      self.markMatches()
+      self.printBoard()
       return
 
     # keep checkMatches until there are no matches, that is, Game Board is completed
     # initialization - no matches on the init-board; users can make move now on; Scores will be taken for user's move
     while self.matchesInOneRound > 0:
       # TODO: randomize the matched cells, to randomize the Board;  Or, instead randomize, let's sinkCells
+      self.markMatches()
 
       # check matches again
       self.checkMatches()
@@ -162,7 +169,7 @@ class MatchingGame:
         else:
           # check if previous matches (right before this point) reaches consecutiveMatch ?
           if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
-            self.matches.get("rows")[str(r)] = (rowMatchStart, rowMatchEnd)
+            self.matches.get("rows")[r] = (rowMatchStart, rowMatchEnd)
             self.matchesInOneRound += rowMatchEnd - rowMatchStart
             self.foundMatches = True
 
@@ -172,7 +179,7 @@ class MatchingGame:
 
       # special case; all characters in that row are matched
       if rowMatchEnd - rowMatchStart >= self.consecutiveMatch:
-        self.matches.get("rows")[str(r)] = (rowMatchStart, rowMatchEnd)
+        self.matches.get("rows")[r] = (rowMatchStart, rowMatchEnd)
         self.matchesInOneRound += rowMatchEnd - rowMatchStart
         self.foundMatches = True
 
@@ -189,7 +196,7 @@ class MatchingGame:
         else:
           # check if previous matches (prior to this breaking point) reaches self.consecutiveMatch ?
           if colMatchEnd - colMatchStart >= self.consecutiveMatch:
-            self.matches.get("cols")[str(c)] = (colMatchStart, colMatchEnd)
+            self.matches.get("cols")[c] = (colMatchStart, colMatchEnd)
             self.matchesInOneRound += colMatchEnd - colMatchStart
             self.foundMatches = True
 
@@ -199,11 +206,24 @@ class MatchingGame:
 
       # special case: all characters in that column are matched
       if colMatchEnd - colMatchStart >= self.consecutiveMatch:
-        self.matches.get("cols")[str(c)] = (colMatchStart, colMatchEnd)
+        self.matches.get("cols")[c] = (colMatchStart, colMatchEnd)
         self.matchesInOneRound += colMatchEnd - colMatchStart
         self.foundMatches = True
 
 
+
+  """Mark matches with MATCH_MARKER"""
+  def markMatches(self):
+    for row, startEnd in self.matches.get("rows").items():
+      # Python format String : https://pyformat.info/
+      print('{} {}'.format("row=", row), startEnd)
+      for c in range(startEnd[0], startEnd[1] + 1):
+        self.board[row][c] = MatchingGame.MATCH_MARKER
+
+    for col, startEnd in self.matches.get("cols").items():
+      print('{} {}'.format("col=", col), startEnd)
+      for r in range(startEnd[0], startEnd[1] + 1):
+        self.board[r][col] = MatchingGame.MATCH_MARKER
 
 
   def promptUser(self):
