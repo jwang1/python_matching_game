@@ -44,8 +44,12 @@ class MatchingGame:
 
   MATCH_MARKER = '*'
 
+
   """Initialize data members."""
-  def __init__(self, autoGameSetting, randmoizeCells):
+  def __init__(self, autoGameSetting, randmoizeCells, cellVals = string.ascii_lowercase):
+
+    self.cellValues = cellVals
+
     self.score = 0
 
     # might use self.matchesInOneRound, instead of self.foundMatches
@@ -87,6 +91,11 @@ class MatchingGame:
     self.setupGame()
 
 
+  # overrides the cell values (useful for testing, small cellVals, can get more matches; otherwise, 26 lowercase
+  # letters not easy to get consecutive matches)
+  def setCellValues(self, cellVals):
+    self.cellValues = cellVals
+
 
   """User prompts, set up the board size, and defined consecutive matching"""
   def setupGame(self):
@@ -95,7 +104,9 @@ class MatchingGame:
 
     self.initBoard()
 
+    print("__________BEFORE checking consecutive matches_____________\n")
     self.printBoard()
+
 
     self.checkMatches()
 
@@ -118,6 +129,7 @@ class MatchingGame:
 
       print("# of matches : " + str(self.matchesInOneRound))
 
+    print("__________AFTER checking consecutive matches (ready to play)_____________\n")
     self.printBoard()
 
 
@@ -135,7 +147,7 @@ class MatchingGame:
 
     for r in range(self.row):
       for c in range(self.col):
-        self.board[r][c] = random.choice(string.ascii_lowercase)
+        self.board[r][c] = random.choice(self.cellValues)
 
 
   def printBoard(self):
@@ -250,14 +262,14 @@ class MatchingGame:
         # otherwise, using random generated value
         for r in range(startEndByCol[1], startEndByCol[0] -1, -1):
           if sinkPos < 0:
-            self.board[r][c] = random.choice(string.ascii_lowercase)
+            self.board[r][c] = random.choice(self.cellValues)
           else:
             self.board[r][c] = self.board[sinkPos][c]
             sinkPos -= 1
 
         # after the sinking (replacing the markers), we still need to filling the cells sunk for the MATCH_MARKERs
         for r in range(startEndByCol[0]):
-          self.board[r][c] = random.choice(string.ascii_lowercase)
+          self.board[r][c] = random.choice(self.cellValues)
 
     return
 
@@ -362,7 +374,10 @@ if __name__ == '__main__':
     if uip in ('no', 'n', 'nope', 'don\'t'):
       game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, False)
     else:
-      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True)
+      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True, 'abcd')
+
+      # when computer generate Game Board, we will re-set the cell-values
+      # game.setCellValues("abc")  (no effect, before init happened first)
 
   else:
     game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER)
