@@ -102,6 +102,7 @@ class MatchingGame:
     # For testing game, if not randomzing cells, no need to checkMatches again.  Game Board is initialized up to here.
     if not self.randomizeCells:
       self.markMatches()
+      self.replaceMatchMarker()
       self.printBoard()
       return
 
@@ -110,6 +111,7 @@ class MatchingGame:
     while self.matchesInOneRound > 0:
       # TODO: randomize the matched cells, to randomize the Board;  Or, instead randomize, let's sinkCells
       self.markMatches()
+      self.replaceMatchMarker()
 
       # check matches again
       self.checkMatches()
@@ -225,6 +227,61 @@ class MatchingGame:
       for r in range(startEnd[0], startEnd[1] + 1):
         self.board[r][col] = MatchingGame.MATCH_MARKER
 
+
+  """Replace Match Markers"""
+  def replaceMatchMarker(self):
+    # the algorithm:
+    # 1. check each column,
+    # 2. from bottom of the column to the top of the column
+    # 3. record the start and end of the MATCH_MARKERs
+    # 4. Replace MATCH_MARKEs of (markerStart, markerEnd), with values from values from (0, markerEnd + 1);
+    #    need to handle special case, when values above MATCH_MARKER for that column are NOT enough to cover MATCH_MARKERS,
+    #    we need to randomily generate characters
+
+    for c in range(self.col):
+      startEndByCol = self.getStartEndIndexForMatchMarksByCol(c)
+
+      if len(startEndByCol) > 0:
+        # the value to be sunk; "sinkPos < 0" means no values on board for this column to sink, need to generate random value
+        sinkPos = startEndByCol[0] -1
+
+        # reverse traverse list (columnMatchMark-Start-Index, columnMatchMark-End-Index);
+        # if exists, using existing value on that column to FILL IN marked cells
+        # otherwise, using random generated value
+        for r in range(startEndByCol[1], startEndByCol[0] -1, -1):
+          if sinkPos < 0:
+            self.board[r][c] = random.choice(string.ascii_lowercase)
+          else:
+            self.board[r][c] = self.board[sinkPos][c]
+            sinkPos -= 1
+
+        # after the sinking (replacing the markers), we still need to filling the cells sunk for the MATCH_MARKERs
+        for r in range(startEndByCol[0]):
+          self.board[r][c] = random.choice(string.ascii_lowercase)
+
+    return
+
+
+  """get start and end indexes for MACH_MARKERs in a column"""
+  def getStartEndIndexForMatchMarksByCol(self, col):
+    startEnd = ()
+    start = -1
+    end = -1
+
+    for r in range(self.row):
+      if self.board[r][col] == MatchingGame.MATCH_MARKER:
+        if start < 0:
+          start = r
+        end = r
+
+    if start >= 0:
+      startEnd = (start, end)
+
+    # print formatted tupple elements/values
+    print('{} {} got startEnd Indexes: ({}, {}) '.format("getStartEndIndexForMatchMarksByCol(...) checking column: ",
+                                                col, *startEnd))
+
+    return startEnd
 
   def promptUser(self):
     self.promptRow()
