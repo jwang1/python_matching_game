@@ -153,8 +153,12 @@ class MatchingGame:
 
 
   def printBoard(self):
+    self.printColumnHeader()
+
     for r in range(self.row):
-      print('-'*2*self.col)
+      self.printRowDelimitor()
+
+      self.printRowNumber(r)
 
       for c in range(self.col):
         # print without newline : https://stackoverflow.com/questions/493386/how-to-print-without-newline-or-space
@@ -162,7 +166,25 @@ class MatchingGame:
 
       print('|')
 
-    print('-'*2*self.col)
+    self.printRowDelimitor()
+
+
+  def printRowNumber(self, row):
+    # print row number, starts from 1
+    print('{} '.format(row + 1), end='', flush=True)
+
+
+
+  def printColumnHeader(self):
+    # print column letters, starts from A
+    print(' '*2, end='', flush=True)
+    for c in range(self.col):
+      print(' ' + chr(ord('A') + c), end='', flush=True)
+    print(' ')
+
+
+  def printRowDelimitor(self):
+    print(' '*2 + '-'*(2 * self.col + 1))
 
 
   def checkMatches(self):
@@ -362,7 +384,8 @@ class MatchingGame:
 
   """Initialize data members."""
   def playMatchingGame(self):
-    self.debugMatchingGame("\n" + "Let's start gaming: ")
+    print("\n" + "Let's start gaming: ")
+
 
 
   # Util api to derandomize cell by row
@@ -402,6 +425,6 @@ if __name__ == '__main__':
   else:
     game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER)
 
-  game.setDebug(False)
+  game.setDebug(True)
   game.setupGame()
   game.playMatchingGame()
