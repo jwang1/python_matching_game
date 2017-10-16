@@ -487,9 +487,9 @@ class MatchingGame:
         # and 2) replace those sunk cells with randomly generated values.
         self.replaceMatchMarker()
 
-      # at least user made a move (swapped two cells); note that computer may mark/sweep/replace/generate values
-      # let's reflect the move on Board
-      self.printBoard()
+    # at least user made a move (swapped two cells); note that computer may mark/sweep/replace/generate values
+    # let's reflect the move on Board
+    self.printBoard()
 
 
 
@@ -553,7 +553,7 @@ class MatchingGame:
 if __name__ == '__main__':
   uip = input("? Computer set up game board: ")
   if uip in ('yes', 'y', 'true', 'sure', 'ok', 'k'):
-    uip = input ("? Randomize cells: ")
+    uip = input("? Randomize cells: ")
     if uip in ('no', 'n', 'nope', 'don\'t'):
       game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, False)
     else:
@@ -563,7 +563,11 @@ if __name__ == '__main__':
       # game.setCellValues("abc")  (no effect, before init happened first)
 
   else:
-    game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER)
+    uip = input("? using smaller set of letters (say, abcdefg): ")
+    if uip in MatchingGame.USER_CONFIRM:
+      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, 'abcdefg')
+    else:
+      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, string.ascii_lowercase)
 
   # setting debug mode
   game.setDebug(False)
