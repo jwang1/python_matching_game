@@ -63,7 +63,7 @@ class MatchingGame:
 
 
   """Initialize data members."""
-  def __init__(self, autoGameSetting, randmoizeCells, cellVals = string.ascii_lowercase):
+  def __init__(self, autoGameSetting, randmoizeCells = True, cellVals = string.ascii_lowercase):
 
     self.cellValues = cellVals
 
@@ -487,6 +487,10 @@ class MatchingGame:
         # and 2) replace those sunk cells with randomly generated values.
         self.replaceMatchMarker()
 
+        if self.isDebug:
+          self.printBoard()
+
+
     # at least user made a move (swapped two cells); note that computer may mark/sweep/replace/generate values
     # let's reflect the move on Board
     self.printBoard()
@@ -565,9 +569,9 @@ if __name__ == '__main__':
   else:
     uip = input("? using smaller set of letters (say, abcdefg): ")
     if uip in MatchingGame.USER_CONFIRM:
-      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, 'abcdefg')
+      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, cellVals = 'abcdefg')
     else:
-      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, string.ascii_lowercase)
+      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, cellVals = string.ascii_lowercase)
 
   # setting debug mode
   game.setDebug(False)
