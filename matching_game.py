@@ -300,22 +300,23 @@ class MatchingGame:
       startEndByCol = self.getStartEndIndexForMatchMarksByCol(c)
 
       if len(startEndByCol) > 0:
-        # the value to be sunk; "sinkPos < 0" means no values on board for this column to sink, need to generate random value
-        sinkPos = startEndByCol[0] -1
 
-        # reverse traverse list (columnMatchMark-Start-Index, columnMatchMark-End-Index);
-        # if exists, using existing value on that column to FILL IN marked cells
-        # otherwise, using random generated value
-        for r in range(startEndByCol[1], startEndByCol[0] -1, -1):
-          if sinkPos < 0:
-            self.board[r][c] = random.choice(self.cellValues)
-          else:
-            self.board[r][c] = self.board[sinkPos][c]
-            sinkPos -= 1
+        # get the elements that can be sunk
+        # notice the order of the elements;  1st row element @ that column is the first element in elements List
+        # after the following operation
+        elements = []
+        for r in range(0, startEndByCol[0]):
+          elements.append(self.board[r][c])
 
-        # after the sinking (replacing the markers), we still need to filling the cells sunk for the MATCH_MARKERs
-        for r in range(startEndByCol[0]):
-          self.board[r][c] = random.choice(self.cellValues)
+        # for sure we need to generate some randomized values; to be exact,
+        for i in range(0, startEndByCol[1] - startEndByCol[0] + 1):
+          elements.insert(0, random.choice(self.cellValues))
+
+        self.debugMatchingGame("elements {} to replace and fill the column".format(elements))
+
+        # now fill all from elements, into the column starting from startEndByCol[1],
+        for i in range(startEndByCol[1] + 1):
+          self.board[i][c] = elements[i]
 
     return
 
@@ -561,20 +562,20 @@ if __name__ == '__main__':
     if uip in ('no', 'n', 'nope', 'don\'t'):
       game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, False)
     else:
-      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True, 'ab')
+      game = MatchingGame(MatchingGame.GAME_BOARD_SET_BY_COMPUTER, True, 'abc')
 
       # when computer generate Game Board, we will re-set the cell-values
       # game.setCellValues("abc")  (no effect, before init happened first)
 
   else:
-    uip = input("? using smaller set of letters (say, abcdefg): ")
+    uip = input("? using smaller set of letters (say, abcefg): ")
     if uip in MatchingGame.USER_CONFIRM:
-      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, cellVals = 'abcdefg')
+      game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, cellVals = 'abcefg')
     else:
       game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER, cellVals = string.ascii_lowercase)
 
   # setting debug mode
-  game.setDebug(False)
+  game.setDebug(True)
 
   game.setupGame()
 
