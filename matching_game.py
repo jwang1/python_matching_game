@@ -5,6 +5,7 @@ from sys import exit
 # https://stackoverflow.com/questions/2823316/generate-a-random-letter-in-python
 import string
 import random
+import re
 
 """
     # input:  grid size (nxm) ;  number of consecutive matching (cm) (which has to be less than min(n, m)
@@ -25,6 +26,9 @@ class MatchingGame:
   # does python have such constant ?
   BOLD = '\033[1m'
   END = '\033[0m'
+  RED = '\033[91m'
+
+
 
   QUIT = ('q', 'quit', 'Q', 'Quit')
 
@@ -38,11 +42,24 @@ class MatchingGame:
   PROMPT_BOARD_COL = "Please input the number of " + BOLD + "Columns" + END + " for the game board (must be number > 0): "
   PROMPT_CONSECUTIVE_MATCHES = "Please input " + BOLD + " Number of consecutive matches" + END + " for the game " \
                                "(note it has to be less or equal to the mininum of "
+
   USER_QUITS = "User quits game."
+
+  USER_CONFIRM = ('y', 'yes', 'Yes', 'YES', 'confirm', 'Confirm', 'CONFIRM')
+  USER_CANCEL = ('n', 'no', 'No', 'NO', 'cancel', 'Cancel', 'CANCEL')
 
   DERANDOMIZER = 'a'
 
   MATCH_MARKER = '*'
+
+  BOARD_ROW_START = 1
+
+  BOARD_COLUMN_START = 'A'
+
+  DIRECTION_UP = ('u', 'U', 'up', 'Up', 'UP')
+  DIRECTION_DOWN = ('d', 'D', 'down', 'Donw', 'DOWN')
+  DIRECTION_LEFT = ('l', 'L', 'left', 'Left', 'LEFT')
+  DIRECTION_RIGHT = ('r', 'R', 'right', 'Right', 'RIGHT')
 
 
   """Initialize data members."""
@@ -122,8 +139,10 @@ class MatchingGame:
     # keep checkMatches until there are no matches, that is, Game Board is completed
     # initialization - no matches on the init-board; users can make move now on; Scores will be taken for user's move
     while self.matchesInOneRound > 0:
-      # TODO: randomize the matched cells, to randomize the Board;  Or, instead randomize, let's sinkCells
+      # Mark the consecutive matches
       self.markMatches()
+      # Replace the consecutive matches by 1) sinking above cells for each column with marked matches;
+      # and 2) randomly generating values for places after being sunk
       self.replaceMatchMarker()
 
       # check matches again
@@ -171,15 +190,14 @@ class MatchingGame:
 
   def printRowNumber(self, row):
     # print row number, starts from 1
-    print('{} '.format(row + 1), end='', flush=True)
-
+    print('{} '.format(row + MatchingGame.BOARD_ROW_START), end='', flush=True)
 
 
   def printColumnHeader(self):
     # print column letters, starts from A
     print(' '*2, end='', flush=True)
     for c in range(self.col):
-      print(' ' + chr(ord('A') + c), end='', flush=True)
+      print(' ' + chr(ord(MatchingGame.BOARD_COLUMN_START) + c), end='', flush=True)
     print(' ')
 
 
@@ -377,15 +395,137 @@ class MatchingGame:
         self.col = int(ipt)
 
       except:
-        # pass
+        pass
+
+      finally:
         if self.quit:
           exit(MatchingGame.USER_QUITS)
 
 
   """Initialize data members."""
   def playMatchingGame(self):
-    print("\n" + "Let's start gaming: ")
+    self.printGuide()
 
+    while True:
+      try:
+        rip = input(">>>>> Please select a cell to swap with another by using the direction (u, d, l, r): ")
+
+        if rip in self.USER_QUITS:
+          self.quit = True
+
+
+        # move will be '2B u'  (or '2b u')
+        (cell, direction) = rip.split(' ')
+
+        # validate
+        (r, c, direction) = self.validateMove(cell, direction)
+
+        # move
+        # it will have following checkMatches() multiple times until no consecutive matches, and also add up scores
+        self.move(int(r), c, direction)
+
+        self.printScore()
+
+      except (Exception, IndexError) as err:
+        if self.quit:
+          confirm = input("Are your sure to Quit the game?")
+          if confirm in MatchingGame.USER_CONFIRM:
+            print("{}Your final score is: {}{}".format(MatchingGame.BOLD, self.score, MatchingGame.END))
+          elif confirm in MatchingGame.USER_CANCEL:
+            # user's is not going to quit game, after being double-checked
+            self.quit = False
+
+        else:
+          print('{}your input "{}" may be invalid; or some other errors "{}"{}'
+                .format(MatchingGame.RED, rip, err, MatchingGame.END))
+
+      finally:
+        if self.quit:
+          exit(MatchingGame.USER_QUITS)
+
+
+  def printScore(self):
+    print('Your current score is: {}{}{}'.format(MatchingGame.BOLD, self.score, MatchingGame.END))
+
+
+  """move() method is called after validateMove()"""
+  """user's input row starts from 1, and column starts from A"""
+  def move(self, row, col, direction):
+    row -= MatchingGame.BOARD_ROW_START
+    col = ord(col) - ord(MatchingGame.BOARD_COLUMN_START)
+
+    tmp = self.board[row][col]
+    if direction in MatchingGame.DIRECTION_UP:
+      self.board[row][col] = self.board[row-1][col]
+      self.board[row-1][col] = tmp
+    elif direction in MatchingGame.DIRECTION_DOWN:
+      self.board[row][col] = self.board[row+1][col]
+      self.board[row+1][col] = tmp
+    elif direction in MatchingGame.DIRECTION_LEFT:
+      self.board[row][col] = self.board[row][col-1]
+      self.board[row][col-1] = tmp
+    elif direction in MatchingGame.DIRECTION_RIGHT:
+      self.board[row][col] = self.board[row][col+1]
+      self.board[row][col+1] = tmp
+    else:
+      # will not come here because move() is called after validateMove()
+      pass
+
+
+    while True:
+      self.checkMatches()
+
+      if self.matchesInOneRound <= 0:
+        break
+      else:
+        self.debugMatchingGame('{} matches found'.format(self.matchesInOneRound))
+        self.score += self.matchesInOneRound
+
+        # now that found conseuctive matches, let's mark them
+        self.markMatches()
+        # sweep those marked celss by 1) sinking above cells for each column with marked matches;
+        # and 2) replace those sunk cells with randomly generated values.
+        self.replaceMatchMarker()
+
+      # at least user made a move (swapped two cells); note that computer may mark/sweep/replace/generate values
+      # let's reflect the move on Board
+      self.printBoard()
+
+
+
+  """return tuple (row, col, direction), or exception"""
+  def validateMove(self, cell, direction):
+
+    match = re.match(r"([0-9]+)([a-z]+)", cell, re.I)
+
+    if match == None or len(match.groups()) != 2:
+      raise Exception('{} is invalid, input something like 2B (2nd row, 2nd column).'.format(cell))
+
+    (row, col) = match.groups()
+
+    if direction not in MatchingGame.DIRECTION_UP and direction not in MatchingGame.DIRECTION_DOWN \
+            and direction not in MatchingGame.DIRECTION_LEFT and direction not in MatchingGame.DIRECTION_RIGHT:
+     raise Exception('direction {} is invalid, please input either u, d, l, or r'.format(direction))
+    elif direction in MatchingGame.DIRECTION_UP and int(row) <= 1:
+      raise IndexError('direction {} is out of bound. Row {} cannot move up.'.format(direction, row))
+    elif direction in MatchingGame.DIRECTION_DOWN and int(row) >= self.row:
+      raise IndexError('direction {} is out of bound. Row {} cannot move down.'.format(direction, row))
+    elif direction in MatchingGame.DIRECTION_LEFT and ord(col.upper()) <= ord(MatchingGame.BOARD_COLUMN_START):
+      raise IndexError('direction {} is out of bound. Column {} cannot move left.'.format(direction, row))
+    elif direction in MatchingGame.DIRECTION_RIGHT and ord(col.upper()) - ord(MatchingGame.BOARD_COLUMN_START) >= self.col:
+      raise IndexError('direction {} is out of bound. Column {} cannot move left.'.format(direction, row))
+
+    return (row, col.upper(), direction)
+
+
+
+  def printGuide(self):
+    print("***************************************************************************************************")
+    print("****** Let's start gaming: (enter q to Quit game)                                            ******")
+    print("****** Pick a cell, and give moving direction                                                ******")
+    print("****** use row-# and column-letter for Cell, for instance, 2B for cell at 2nd row 2nd column ******")
+    print("****** moving directions (u / d / l / r),  u for Up, d for Down, l for Left, and r for Right ******")
+    print("***************************************************************************************************")
 
 
   # Util api to derandomize cell by row
@@ -425,6 +565,9 @@ if __name__ == '__main__':
   else:
     game = MatchingGame(not MatchingGame.GAME_BOARD_SET_BY_COMPUTER)
 
-  game.setDebug(True)
+  # setting debug mode
+  game.setDebug(False)
+
   game.setupGame()
+
   game.playMatchingGame()
