@@ -8,7 +8,7 @@ import random
 import re
 
 """
-    # input:  grid size (nxm) ;  number of consecutive matching (cm) (which has to be less than min(n, m)
+    # input:  grid size (NxM) ;  number of consecutive matching (cm) (which has to be less than min(n, m)
 
     # init grid  (need to make sure no consecutive matches)
 
