@@ -225,6 +225,8 @@ class MatchingPyGame:
   def getShapeAndColor(self, boxx, boxy):
     return self.mainBoard[boxx][boxy][0], self.mainBoard[boxx][boxy][1]
 
+
+  """ This method draws the icon, the line-shaped had some multiple lines """
   def drawIcon(self, shape, color, boxx, boxy):
     quarter = int(MatchingPyGame.BOX_SIZE * 0.25) # syntactic sugar
     half =    int(MatchingPyGame.BOX_SIZE * 0.5)  # syntactic sugar
