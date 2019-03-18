@@ -70,6 +70,7 @@ class MatchingPyGame:
 
     self.displaySurf.fill(MatchingPyGame.BG_COLOR)
 
+    # Actually, did not see the effect; can be removed
     self.makeAnimation()
 
     self.play()
@@ -117,11 +118,9 @@ class MatchingPyGame:
             icon2shape, icon2color = self.getShapeAndColor(boxx, boxy)
 
             if icon1shape != icon2shape or icon1color != icon2color:
-              # Icons don't match. Re-cover up both selections.
-              #pygame.time.wait(1000)  # 1000 milliseconds = 1 sec
-              #self.coverBoxesAnimation([(self.firstSelection[0], self.firstSelection[1]), (boxx, boxy)])
-
-              # need to flip the two-not-matched cards
+              # Icons don't match. Re-cover up both selections. <-- this will be done in the drawBoard
+              # at the beginning of this event-loop
+              # need to flip the two-not-matched cards; so that drawBoard will cover-up these two unmatched cards.
               self.revealedBoxes[self.firstSelection[0]][self.firstSelection[1]] = False
               self.revealedBoxes[boxx][boxy] = False
 
@@ -141,6 +140,7 @@ class MatchingPyGame:
               # Replay the start game animation.
               #self.startGameAnimation()
 
+            # this need to careful, need to have "self" prefix, otherwise, we would see random cards re-covered up.
             self.firstSelection = None  # reset firstSelection variable
 
       # Redraw the screen and wait a clock tick.
