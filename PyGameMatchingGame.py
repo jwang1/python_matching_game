@@ -13,8 +13,8 @@ class MatchingPyGame:
 
   #BOARD_WIDTH = 10  # nbr of columns of icons
   #BOARD_HEIGHT = 7  # nbr of rows of icons
-  BOARD_WIDTH = 3  # nbr of columns of icons
-  BOARD_HEIGHT = 2  # nbr of rows of icons
+  BOARD_WIDTH = 4  # nbr of columns of icons
+  BOARD_HEIGHT = 3  # nbr of rows of icons
 
   # for future improvement
   EMOJIS = ['🍌', '🍒', '🍐', '🍈', '🍇', '🍊', '🍉']
@@ -70,7 +70,7 @@ class MatchingPyGame:
 
     self.displaySurf.fill(MatchingPyGame.BG_COLOR)
 
-    #self.makeAnimation()
+    self.makeAnimation()
 
     self.play()
 
