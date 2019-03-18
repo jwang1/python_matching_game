@@ -13,8 +13,8 @@ class MatchingPyGame:
 
   #BOARD_WIDTH = 10  # nbr of columns of icons
   #BOARD_HEIGHT = 7  # nbr of rows of icons
-  BOARD_WIDTH = 6  # nbr of columns of icons
-  BOARD_HEIGHT = 4  # nbr of rows of icons
+  BOARD_WIDTH = 3  # nbr of columns of icons
+  BOARD_HEIGHT = 2  # nbr of rows of icons
 
   # for future improvement
   EMOJIS = ['🍌', '🍒', '🍐', '🍈', '🍇', '🍊', '🍉']
@@ -250,9 +250,9 @@ class MatchingPyGame:
     pygame.draw.rect(self.displaySurf, MatchingPyGame.HIGHLIGHT_COLOR,
                      (left - 5, top - 5, MatchingPyGame.BOX_SIZE + 10, MatchingPyGame.BOX_SIZE + 10), 4)
 
-  def revealBoxesAnimation(self, boxex):
+  def revealBoxesAnimation(self, boxes):
     for coverage in range(MatchingPyGame.BOX_SIZE, (-MatchingPyGame.REVEAL_SPEED) - 1, -MatchingPyGame.REVEAL_SPEED):
-        self.drawBoxCovers(boxex, coverage)
+        self.drawBoxCovers(boxes, coverage)
 
   def gameWonAnimation(self):
     # flash the background color when the player has won
