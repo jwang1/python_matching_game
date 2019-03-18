@@ -70,7 +70,7 @@ class MatchingPyGame:
 
     self.displaySurf.fill(MatchingPyGame.BG_COLOR)
 
-    self.makeAnimation()
+    #self.makeAnimation()
 
     self.play()
 
@@ -85,6 +85,7 @@ class MatchingPyGame:
       mousex = mousey = 0  # otherwise getBoxAtPixel will complain referred before assignment
 
       self.displaySurf.fill(MatchingPyGame.BG_COLOR)  # drawing the window
+      self.pygame.time.wait(300)
       self.drawBoard()
 
       for event in pygame.event.get():  # event handling loop
@@ -102,11 +103,14 @@ class MatchingPyGame:
         # The mouse is currently over a box.
         if not self.revealedBoxes[boxx][boxy]:
           self.drawHighlightBox(boxx, boxy)
+
         if not self.revealedBoxes[boxx][boxy] and mouseClicked:
-          self.revealBoxesAnimation([(boxx, boxy)])
           self.revealedBoxes[boxx][boxy] = True  # set the box as "revealed"
+          self.revealBoxesAnimation([(boxx, boxy)])
+
           if self.firstSelection == None:  # the current box was the first box clicked
             self.firstSelection = (boxx, boxy)
+
           else:  # the current box was the second box clicked
             # Check if there is a match between the two icons.
             icon1shape, icon1color = self.getShapeAndColor(self.firstSelection[0], self.firstSelection[1])
@@ -114,10 +118,13 @@ class MatchingPyGame:
 
             if icon1shape != icon2shape or icon1color != icon2color:
               # Icons don't match. Re-cover up both selections.
-              pygame.time.wait(1000)  # 1000 milliseconds = 1 sec
-              self.coverBoxesAnimation([(self.firstSelection[0], self.firstSelection[1]), (boxx, boxy)])
+              #pygame.time.wait(1000)  # 1000 milliseconds = 1 sec
+              #self.coverBoxesAnimation([(self.firstSelection[0], self.firstSelection[1]), (boxx, boxy)])
+
+              # need to flip the two-not-matched cards
               self.revealedBoxes[self.firstSelection[0]][self.firstSelection[1]] = False
               self.revealedBoxes[boxx][boxy] = False
+
             elif self.hasWon():  # check if all pairs found
               self.gameWonAnimation()
               pygame.time.wait(2000)
@@ -132,8 +139,9 @@ class MatchingPyGame:
               pygame.time.wait(1000)
 
               # Replay the start game animation.
-              self.startGameAnimation()
-            firstSelection = None  # reset firstSelection variable
+              #self.startGameAnimation()
+
+            self.firstSelection = None  # reset firstSelection variable
 
       # Redraw the screen and wait a clock tick.
       self.pygame.display.update()
@@ -177,11 +185,19 @@ class MatchingPyGame:
 
   """Gmae animation"""
   def makeAnimation(self):
+    self.generateRevealedBoxesData(False)
+    boxes = []
+    for x in range(MatchingPyGame.BOARD_WIDTH):
+        for y in range(MatchingPyGame.BOARD_HEIGHT):
+            boxes.append( (x, y) )
+    random.shuffle(boxes)
+    #boxGroups = splitIntoGroupsOf(8, boxes)
+    boxGroups = self.splitIntoGroupsOf(MatchingPyGame.BOARD_WIDTH, boxes)
 
-    # FIXME:
-    converedBoxes = self.generateRevealedBoxesData(False)
-
-    #boxes = [i for x in range(MatchingPyGame.BOARD_WIDTH)] for
+    self.drawBoard()
+    for boxGroup in boxGroups:
+        self.revealBoxesAnimation(boxGroup)
+        self.coverBoxesAnimation(boxGroup)
 
 
   def drawBoard(self):
@@ -251,8 +267,10 @@ class MatchingPyGame:
                      (left - 5, top - 5, MatchingPyGame.BOX_SIZE + 10, MatchingPyGame.BOX_SIZE + 10), 4)
 
   def revealBoxesAnimation(self, boxes):
-    for coverage in range(MatchingPyGame.BOX_SIZE, (-MatchingPyGame.REVEAL_SPEED) - 1, -MatchingPyGame.REVEAL_SPEED):
-        self.drawBoxCovers(boxes, coverage)
+    self.drawBoxCovers(boxes, -1)
+
+    #for coverage in range(MatchingPyGame.BOX_SIZE, (-MatchingPyGame.REVEAL_SPEED) - 1, -MatchingPyGame.REVEAL_SPEED):
+    #    self.drawBoxCovers(boxes, coverage)
 
   def gameWonAnimation(self):
     # flash the background color when the player has won
@@ -283,9 +301,11 @@ class MatchingPyGame:
     self.fpsClock.tick(MatchingPyGame.FPS)
 
   def coverBoxesAnimation(self, boxes):
+    self.drawBoxCovers(boxes, MatchingPyGame.BOX_SIZE)
+
     # Do the "box cover" animation.
-    for coverage in range(0, MatchingPyGame.BOX_SIZE + MatchingPyGame.REVEAL_SPEED, MatchingPyGame.REVEAL_SPEED):
-        self.drawBoxCovers(boxes, coverage)
+    #for coverage in range(0, MatchingPyGame.BOX_SIZE + MatchingPyGame.REVEAL_SPEED, MatchingPyGame.REVEAL_SPEED):
+    #    self.drawBoxCovers(boxes, coverage)
 
   def hasWon(self):
     # Returns True if all the boxes have been revealed, otherwise False

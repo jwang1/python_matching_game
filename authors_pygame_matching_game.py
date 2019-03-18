@@ -308,7 +308,7 @@ def startGameAnimation(board):
             boxes.append( (x, y) )
     random.shuffle(boxes)
     #boxGroups = splitIntoGroupsOf(8, boxes)
-    boxGroups = [] # splitIntoGroupsOf(BOARDWIDTH, boxes)
+    boxGroups = splitIntoGroupsOf(BOARDWIDTH, boxes)
 
     drawBoard(board, coveredBoxes)
     for boxGroup in boxGroups:
